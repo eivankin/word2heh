@@ -2,6 +2,7 @@ import re
 import random
 from math import ceil
 from typing import Callable
+from sys import stdin
 
 from syllable import Syllable, HEH_SYLLABLES, MAX_SIMILARITY
 from constants import HEH_LEVEL, HEH_RATE, VOWELS, CONSONANTS
@@ -42,7 +43,7 @@ def word_to_heh(word_match: re.Match, rate: float = HEH_RATE, level: int = HEH_L
             key=lambda p: MAX_SIMILARITY - p[-1]):
         if level <= 0:
             break
-        level = level - 1 - 0.5 * (best_match.value[-1] not in VOWELS or (
+        level = level - 1 - 0.3 * (best_match.value[-1] not in VOWELS or (
                 i + 1 < len(syllables) and syllables[i + 1].value[0].lower() == 'х'))
         syllables[i] = best_match.agree_case_with(syl)
 
@@ -129,5 +130,5 @@ def word_to_syllables(word: str) -> list[Syllable]:
 
 if __name__ == '__main__':
     # Playground
-    text = input()
+    text = stdin.read()
     print(re.sub('[А-Яа-я]+', word_to_heh, text))

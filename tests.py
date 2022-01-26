@@ -6,8 +6,10 @@ RAW_SYLLABLES = (['разъ', 'езд'], ['а', 'бо', 'ба'], ['ку', 'пи�
 
 SYLLABLES = ([Syllable('хе', 'е'), Syllable('ха', 'а'), Syllable('хе', 'е')],
              [Syllable('хе', 'е'), Syllable('хе', 'е'), Syllable('ха', 'а')],
-             [Syllable('ха', 'а'), Syllable('хе', 'е'), Syllable('хе', 'е')])
-GENERALIZED_SYLLABLES = ([Syllable('хе', 'е')] * 3,) * 3
+             [Syllable('ха', 'а'), Syllable('хе', 'е'), Syllable('хе', 'е')],
+             [Syllable('ха', 'а'), Syllable('хех', 'е')])
+GENERALIZED_SYLLABLES = ([Syllable('хе', 'е')] * 3,) * 3 + \
+                        ([Syllable('хех', 'е'), Syllable('хех', 'е')],)
 
 
 def test_word_to_syllables():
