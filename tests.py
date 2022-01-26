@@ -17,4 +17,4 @@ def test_word_to_syllables():
 
 def test_generalize_syllables():
     for test, result in zip(SYLLABLES, GENERALIZED_SYLLABLES):
-        assert generalize_syllables(test) == result
+        assert generalize_syllables(test, level=1) == result

@@ -1,51 +1,10 @@
 import re
 import random
-from dataclasses import dataclass
 from math import ceil
 from typing import Callable
 
-DEBUG = True
-HEH_RATE = 1 if DEBUG else .25
-HEH_LEVEL = 0.4
-VOWELS: set[str] = set('уеыаоэяию')
-# Й, Ъ, Ь пропущены, так как с них не может начинаться слог
-CONSONANTS: set[str] = set('цкнгшщзхфвпрлджчсмтб')
-
-
-@dataclass
-class Syllable:
-    MAX_SIMILARITY = 3
-    SIMILAR_VOWELS = {('а', 'я'), ('е', 'э')}
-    value: str
-    vowel: str
-
-    def __str__(self) -> str:
-        return self.value
-
-    def similarity(self, other: 'Syllable') -> int:
-        return self.vowel_similarity(other) + \
-               ((self.value[-1].lower() in VOWELS) == (other.value[-1].lower() in VOWELS))
-
-    def vowel_similarity(self, other: 'Syllable') -> int:
-        return (self.vowel == other.vowel) * 2 + (tuple(
-            sorted((self.vowel, other.vowel))) in self.SIMILAR_VOWELS)
-
-    def agree_case_with(self, other_syllable: 'Syllable') -> 'Syllable':
-        result = ''
-        for my, other in zip(self.value, other_syllable.value + 'а' * (
-                len(self.value) - len(other_syllable.value))):
-            result += my.upper() if other.isupper() else my.lower()
-        return Syllable(result, self.vowel)
-
-    def __hash__(self) -> int:
-        return hash((self.value, self.vowel))
-
-    def __eq__(self, other: 'Syllable') -> bool:
-        return self.value.lower() == other.value.lower()
-
-
-HEH_SYLLABLES: set[Syllable] = set(
-    Syllable('х' + vowel + end, vowel) for vowel in ('а', 'е', 'и') for end in ('', 'х'))
+from syllable import Syllable, HEH_SYLLABLES, MAX_SIMILARITY
+from constants import HEH_LEVEL, HEH_RATE, VOWELS, CONSONANTS
 
 
 def normalize_heh_level(level: float, n_syllables: int) -> int:
@@ -58,11 +17,12 @@ def word_to_heh(word_match: re.Match, rate: float = HEH_RATE, level: int = HEH_L
     Main function that performs 'hehefication' - replacing some syllables with the new 'heh' ones
     ('хах', 'ха', etc. for Russian language) from 'HEH_SYLLABLES' set.
 
-    :param word_match: match object, where 0 group should be the word;
-    :param rate: probability of 'hehefication';
-    :param level: percentage of 'hehefized' syllables, at least one syllable will be replaced anyway;
-    :param seed: seed for random for reproducible results;
-    :return: result word.
+    :param word_match: match object, where 0 group should be the word
+    :param rate: probability of 'hehefication'
+    :param level: percentage of 'hehefized' syllables,
+        at least one syllable will be replaced anyway
+    :param seed: seed for random for reproducible results
+    :return: result word
     """
     word: str = word_match.group(0)
 
@@ -77,9 +37,9 @@ def word_to_heh(word_match: re.Match, rate: float = HEH_RATE, level: int = HEH_L
         return word
 
     level = normalize_heh_level(level, len(syllables))
-    for i, syl, best_match, similarity in sorted(
+    for i, syl, best_match, _ in sorted(
             [(i, syl, *get_best_match(syl, HEH_SYLLABLES)) for i, syl in enumerate(syllables)],
-            key=lambda p: Syllable.MAX_SIMILARITY - p[-1]):
+            key=lambda p: MAX_SIMILARITY - p[-1]):
         if level <= 0:
             break
         level = level - 1 - 0.5 * (best_match.value[-1] not in VOWELS or (
@@ -93,20 +53,19 @@ def generalize_syllables(syllables: list[Syllable],
                          filter_func: Callable[[Syllable], bool] = lambda s: s in HEH_SYLLABLES,
                          level=HEH_LEVEL) -> list[Syllable]:
     """
-    :param syllables: list of syllables to generalize;
-    :param filter_func: boolean function to filter syllables from all of them;
-    :param level: level of generalization (1 - max, 0 - no generalization);
-    :return: list of generalized syllables.
+    :param syllables: list of syllables to generalize
+    :param filter_func: boolean function to filter syllables from all of them
+    :param level: level of generalization (1 - max, 0 - no generalization)
+    :return: list of generalized syllables
     """
 
     def gen_step(next_syl: Syllable, reps, idx):
         if prev == curr:
             reps += 1
         elif filter_func(curr):
-            if filter_func(prev) and (
-                    reps > level or (level < 3 and next_syl is not None
-                                     and prev == next_syl) or not level
-                    and len(prev.value) > len(curr.value)):
+            is_surrounded = next_syl is not None and prev == next_syl
+            if filter_func(prev) and (reps > level or is_surrounded or not level
+                                      and len(prev.value) > len(curr.value)):
                 generalized[idx] = prev
                 reps += 1
             else:
@@ -126,15 +85,15 @@ def generalize_syllables(syllables: list[Syllable],
     return generalized
 
 
-def get_best_match(to: Syllable, from_list: set[Syllable]) -> tuple[Syllable, int]:
+def get_best_match(to_syl: Syllable, from_list: set[Syllable]) -> tuple[Syllable, int]:
     """
     Finds most similar syllable from with 'Syllable.similarity' method.
 
-    :param to: syllable for matching;
-    :param from_list: set of possible matches;
-    :return: best match and its similarity.
+    :param to_syl: syllable for matching
+    :param from_list: set of possible matches
+    :return: best match and its similarity
     """
-    return max(((syl, syl.similarity(to)) for syl in from_list), key=lambda t: t[-1])
+    return max(((syl, syl.similarity(to_syl)) for syl in from_list), key=lambda t: t[-1])
 
 
 def word_to_syllables(word: str) -> list[Syllable]:
@@ -142,8 +101,8 @@ def word_to_syllables(word: str) -> list[Syllable]:
     Splits given word into syllables.
     References: https://slogi.su/pravila.html
 
-    :param word: word to split;
-    :return: list of syllables.
+    :param word: word to split
+    :return: list of syllables
     """
 
     syllables: list[Syllable] = []
@@ -171,4 +130,4 @@ def word_to_syllables(word: str) -> list[Syllable]:
 if __name__ == '__main__':
     # Playground
     text = input()
-    print(re.sub(f'[А-Яа-я]+', word_to_heh, text))
+    print(re.sub('[А-Яа-я]+', word_to_heh, text))
