@@ -12,7 +12,7 @@ def normalize_heh_level(level: float, n_syllables: int) -> int:
     return ceil(level * n_syllables)
 
 
-def word_to_heh(word_match: re.Match, rate: float = HEH_RATE, level: int = HEH_LEVEL,
+def word_to_heh(word_match: re.Match, rate: float = HEH_RATE, level: float = HEH_LEVEL,
                 seed: int = None) -> str:
     """
     Main function that performs 'hehefication' - replacing some syllables with the new 'heh' ones
@@ -20,7 +20,7 @@ def word_to_heh(word_match: re.Match, rate: float = HEH_RATE, level: int = HEH_L
 
     :param word_match: match object, where 0 group should be the word
     :param rate: probability of 'hehefication'
-    :param level: percentage of 'hehefized' syllables,
+    :param level: percentage (from 0 to 1) of 'hehefized' syllables,
         at least one syllable will be replaced anyway
     :param seed: seed for random for reproducible results
     :return: result word
