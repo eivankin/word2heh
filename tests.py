@@ -1,8 +1,8 @@
-from main import word_to_syllables, generalize_syllables, Syllable, HEH_SYLLABLES
+from main import word_to_syllables, generalize_syllables, Syllable
 
-WORDS = ('разъезд', 'абоба', 'купил', 'майка', 'хех', 'в', 'а')
+WORDS = ('разъезд', 'абоба', 'купил', 'майка', 'хех', 'в', 'а', 'психология', 'ааа')
 RAW_SYLLABLES = (['разъ', 'езд'], ['а', 'бо', 'ба'], ['ку', 'пил'],
-                 ['май', 'ка'], ['хех'], [], ['а'])
+                 ['май', 'ка'], ['хех'], [], ['а'], ['пси', 'хо', 'ло', 'ги', 'я'], ['а'] * 3)
 
 SYLLABLES = ([Syllable('хе', 'е'), Syllable('ха', 'а'), Syllable('хе', 'е')],
              [Syllable('хе', 'е'), Syllable('хе', 'е'), Syllable('ха', 'а')],

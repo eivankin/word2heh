@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from math import ceil
 from typing import Callable
 
-DEBUG = False
+DEBUG = True
 HEH_RATE = 1 if DEBUG else .25
-HEH_LEVEL = 0.2
+HEH_LEVEL = 0.4
 VOWELS: set[str] = set('уеыаоэяию')
 # Й, Ъ, Ь пропущены, так как с них не может начинаться слог
 CONSONANTS: set[str] = set('цкнгшщзхфвпрлджчсмтб')
@@ -157,11 +157,13 @@ def word_to_syllables(word: str) -> list[Syllable]:
             idx += 1
             while idx < len(word) and word[idx] not in VOWELS:
                 idx += 1
-            idx -= 1 * (word[idx - 1] in CONSONANTS)
-            syllables.append(Syllable(word[start_ptr:idx + (idx == len(word) - 1)], vowel))
+            idx -= 1 * (word[idx - 1] in CONSONANTS or idx - 1 != start_ptr and
+                        word[start_ptr] in VOWELS and word[idx - 1] in VOWELS)
+            idx += (idx == len(word) - 1 and word[-1] not in VOWELS)
+            syllables.append(Syllable(word[start_ptr:idx], vowel))
             start_ptr = idx
         idx += 1
-    if start_ptr < len(word) - 1:
+    if start_ptr < len(word) and vowel:
         syllables.append(Syllable(word[start_ptr:], vowel))
     return syllables
 
