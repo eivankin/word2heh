@@ -16,7 +16,9 @@ GENERALIZED_SYLLABLES = ([Syllable('хе', 'е')] * 3,) * 3 + \
 
 def test_word_to_syllables():
     for test, result in zip(WORDS, RAW_SYLLABLES):
-        assert [s.value for s in word_to_syllables(test)] == result
+        output = word_to_syllables(test)
+        assert [s.value for s in output] == result
+        assert all(s.vowel for s in output)
 
 
 def test_generalize_syllables():
