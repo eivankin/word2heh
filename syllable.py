@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from constants import VOWELS, CONSONANTS
 
 MAX_SIMILARITY = 3
-SIMILAR_VOWELS = {('а', 'я'), ('е', 'э')}
+SIMILAR_VOWELS = {('а', 'я'), ('е', 'э'), ('а', 'о')}
 
 
 @dataclass
