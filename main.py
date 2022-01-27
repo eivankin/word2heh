@@ -59,8 +59,9 @@ def word_to_heh(word_match: re.Match) -> str:
             key=lambda p: MAX_SIMILARITY - p[-1]):
         if level <= 0:
             break
-        level -= 1
-        syllables[i] = best_match.agree_case_with(syl)
+        if syl != best_match:
+            level -= 1
+            syllables[i] = best_match.agree_case_with(syl)
 
     return ''.join(map(str, generalize_syllables(syllables))).replace('хх', 'х')
 
@@ -137,7 +138,7 @@ def word_to_syllables(word: str) -> list[Syllable]:
         syllables.append(Syllable(word[breaks[idx - 1]:breaks[idx]], vowel))
 
     if len(breaks) > 1:
-        syllables.append(Syllable(word[breaks[-2]:], vowel))
+        syllables.append(Syllable(word[breaks[-2]:], vowel if vowel else word[breaks[-1] - 1]))
     return syllables
 
 
