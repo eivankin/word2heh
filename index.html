@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Хехефикация текста</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+          crossorigin="anonymous">
+    <script type="text/javascript"
+            src="https://cdn.jsdelivr.net/npm/brython@3.10.4/brython.min.js">
+    </script>
+    <script type="text/javascript"
+            src="https://cdn.jsdelivr.net/npm/brython@3.10.4/brython_stdlib.js">
+    </script>
+</head>
+<body onload="brython()">
+<div class="container">
+    <h1>Хехефикация текста</h1>
+    <div class="form-floating mb-3">
+        <textarea id="input" class="form-control" placeholder="Введите текст сюда" style="height: 100px"></textarea>
+        <label for="input">Ввод</label>
+    </div>
+    <div class="mb-3">
+        <label for="rate">Частота хехефикации</label>
+        <input type="range" min="0" max="1" step="0.05" class="form-range" id="rate">
+        <label for="level">Степень хехефикации</label>
+        <input type="range" min="0" max="1" step="0.05" class="form-range" id="level">
+        <button class="btn btn-secondary" id="submit">Нажми меня</button>
+    </div>
+    <div class="form-floating mb-3">
+        <textarea id="output" class="form-control" style="height: 100px"
+                  placeholder="Здесь появится результат"></textarea>
+        <label for="output">Вывод</label>
+    </div>
+</div>
+<script type="text/python">
+    from browser import document
+    from main import text_to_heh
+
+    def action(event):
+        document["output"].value = text_to_heh(document["input"].value,
+            rate=float(document["rate"].value), level=float(document["level"].value))
+
+    document["submit"].bind("click", action)
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+</body>
+</html>

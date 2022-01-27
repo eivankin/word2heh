@@ -1,43 +1,59 @@
 import re
 import random
 from math import ceil
-from typing import Callable
+from typing import Callable, Optional
 from sys import stdin
+from dataclasses import dataclass
 
 from syllable import Syllable, HEH_SYLLABLES, MAX_SIMILARITY
 from constants import HEH_LEVEL, HEH_RATE, VOWELS, CONSONANTS
 
+settings: Optional['Settings'] = None
 
-def normalize_heh_level(level: float, n_syllables: int) -> int:
+
+@dataclass
+class Settings:
+    rate: float = HEH_RATE
+    level: float = HEH_LEVEL
+    seed: Optional[int] = None
+
+    """
+    :param rate: probability of 'hehefication'
+    :param level: percentage of 'hehefized' syllables,
+        at least one syllable will be replaced anyway
+    :param seed: seed for random for reproducible results
+    """
+
+
+def denormalize_heh_level(level: float, n_syllables: int) -> int:
     return ceil(level * n_syllables)
 
 
-def word_to_heh(word_match: re.Match, rate: float = HEH_RATE, level: int = HEH_LEVEL,
-                seed: int = None) -> str:
+def word_to_heh(word_match: re.Match) -> str:
     """
     Main function that performs 'hehefication' - replacing some syllables with the new 'heh' ones
     ('хах', 'ха', etc. for Russian language) from 'HEH_SYLLABLES' set.
 
     :param word_match: match object, where 0 group should be the word
-    :param rate: probability of 'hehefication'
-    :param level: percentage of 'hehefized' syllables,
-        at least one syllable will be replaced anyway
-    :param seed: seed for random for reproducible results
     :return: result word
     """
-    word: str = word_match.group(0)
+    global settings
+    if settings is None:
+        settings = Settings()
 
-    if seed is not None:
-        random.seed(seed)
+    word = word_match.group(0)
 
-    if random.random() < (1 - rate):
+    if settings.seed is not None:
+        random.seed(settings.seed)
+
+    if random.random() < (1 - settings.rate):
         return word
 
     syllables = word_to_syllables(word)
     if len(syllables) == 0:
         return word
 
-    level = normalize_heh_level(level, len(syllables))
+    level = denormalize_heh_level(settings.level, len(syllables))
     for i, syl, best_match, _ in sorted(
             [(i, syl, *get_best_match(syl, HEH_SYLLABLES)) for i, syl in enumerate(syllables)],
             key=lambda p: MAX_SIMILARITY - p[-1]):
@@ -75,7 +91,7 @@ def generalize_syllables(syllables: list[Syllable],
 
     generalized = syllables.copy()
     repeats = 0
-    level = normalize_heh_level(1 - level, len(syllables))
+    level = denormalize_heh_level(1 - level, len(syllables))
     for i in range(1, len(syllables)):
         prev, curr = generalized[i - 1:i + 1]
         repeats = gen_step(None if i + 1 >= len(syllables) else syllables[i + 1], repeats, i)
@@ -128,7 +144,12 @@ def word_to_syllables(word: str) -> list[Syllable]:
     return syllables
 
 
+def text_to_heh(text: str, **parameters: dict) -> str:
+    global settings
+    if parameters:
+        settings = Settings(**parameters)
+    return re.sub('[А-Яа-я]+', word_to_heh, text)
+
+
 if __name__ == '__main__':
-    # Playground
-    text = stdin.read()
-    print(re.sub('[А-Яа-я]+', word_to_heh, text))
+    print(text_to_heh(stdin.read()))
