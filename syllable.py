@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from constants import VOWELS
+from constants import VOWELS, CONSONANTS
 
 MAX_SIMILARITY = 3
 SIMILAR_VOWELS = {('а', 'я'), ('е', 'э')}
@@ -29,8 +29,17 @@ class Syllable:
             result += my_letter.upper() if other_letter.isupper() else my_letter.lower()
         return Syllable(result, self.vowel)
 
+    def agree_closeness_with_heh(self, other: 'Syllable') -> 'Syllable':
+        value = self.value
+        if other.is_close() != self.is_close():
+            value = value[:-1] if self.is_close() else value + 'х'
+        return Syllable(value, self.vowel)
+
+    def is_close(self) -> bool:
+        return self.value[-1] in CONSONANTS
+
     def __hash__(self) -> int:
-        return hash((self.value, self.vowel))
+        return hash((self.value.lower(), self.vowel))
 
     def __eq__(self, other: 'Syllable') -> bool:
         return self.value.lower() == other.value.lower()

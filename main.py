@@ -67,13 +67,16 @@ def word_to_heh(word_match: re.Match) -> str:
 
 def generalize_syllables(syllables: list[Syllable],
                          filter_func: Callable[[Syllable], bool] = lambda s: s in HEH_SYLLABLES,
-                         level=HEH_LEVEL) -> list[Syllable]:
+                         level=None) -> list[Syllable]:
     """
     :param syllables: list of syllables to generalize
     :param filter_func: boolean function to filter syllables from all of them
     :param level: level of generalization (1 - max, 0 - no generalization)
     :return: list of generalized syllables
     """
+
+    if level is None:
+        level = settings.level
 
     def gen_step(next_syl: Syllable, reps, idx):
         if prev == curr:
@@ -82,13 +85,15 @@ def generalize_syllables(syllables: list[Syllable],
             is_surrounded = next_syl is not None and prev == next_syl
             if filter_func(prev) and (reps > level or is_surrounded or not level
                                       and len(prev.value) > len(curr.value)):
-                generalized[idx] = prev
+                generalized[idx] = prev.agree_case_with(curr).agree_closeness_with_heh(curr)
                 reps += 1
             else:
                 reps = 0
         return reps
 
     generalized = syllables.copy()
+    prev: Syllable
+    curr: Syllable
     repeats = 0
     level = denormalize_heh_level(1 - level, len(syllables))
     for i in range(1, len(syllables)):
@@ -123,9 +128,9 @@ def word_to_syllables(word: str) -> list[Syllable]:
 
     syllables: list[Syllable] = []
     vowel = ''
-    breaks = [0] + list(filter(lambda i: word[i - 1] in VOWELS, range(1, len(word) + 1)))
+    breaks = [0] + list(filter(lambda i: word[i - 1].lower() in VOWELS, range(1, len(word) + 1)))
     for idx in range(1, len(breaks) - 1):
-        vowel = word[breaks[idx] - 1]
+        vowel = word[breaks[idx] - 1].lower()
         while all(word[breaks[idx] + i] not in VOWELS for i in range(2)) or \
                 (word[breaks[idx]] not in VOWELS.union(CONSONANTS)):
             breaks[idx] += 1

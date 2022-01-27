@@ -1,4 +1,4 @@
-DEBUG = False
+DEBUG = True
 HEH_RATE = 1 if DEBUG else .3
 HEH_LEVEL = 1
 VOWELS: set[str] = set('уеыаоэяию')
