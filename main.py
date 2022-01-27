@@ -59,8 +59,7 @@ def word_to_heh(word_match: re.Match) -> str:
             key=lambda p: MAX_SIMILARITY - p[-1]):
         if level <= 0:
             break
-        level = level - 1 - 0.3 * (best_match.value[-1] not in VOWELS or (
-                i + 1 < len(syllables) and syllables[i + 1].value[0].lower() == 'х'))
+        level -= 1
         syllables[i] = best_match.agree_case_with(syl)
 
     return ''.join(map(str, generalize_syllables(syllables))).replace('хх', 'х')
@@ -123,24 +122,17 @@ def word_to_syllables(word: str) -> list[Syllable]:
     """
 
     syllables: list[Syllable] = []
-    start_ptr = 0
-    idx = 0
     vowel = ''
-    while idx < len(word):
-        letter = word[idx].lower()
-        if letter in VOWELS:
-            vowel = letter
-            idx += 1
-            while idx < len(word) and word[idx] not in VOWELS:
-                idx += 1
-            idx -= 1 * (word[idx - 1] in CONSONANTS or idx - 1 != start_ptr and
-                        word[start_ptr] in VOWELS and word[idx - 1] in VOWELS)
-            idx += (idx == len(word) - 1 and word[-1] not in VOWELS)
-            syllables.append(Syllable(word[start_ptr:idx], vowel))
-            start_ptr = idx
-        idx += 1
-    if start_ptr < len(word) and vowel:
-        syllables.append(Syllable(word[start_ptr:], vowel))
+    breaks = [0] + list(filter(lambda i: word[i - 1] in VOWELS, range(1, len(word) + 1)))
+    for idx in range(1, len(breaks) - 1):
+        vowel = word[breaks[idx] - 1]
+        while all(word[breaks[idx] + i] not in VOWELS for i in range(2)) or \
+                (word[breaks[idx]] not in VOWELS.union(CONSONANTS)):
+            breaks[idx] += 1
+        syllables.append(Syllable(word[breaks[idx - 1]:breaks[idx]], vowel))
+
+    if len(breaks) > 1:
+        syllables.append(Syllable(word[breaks[-2]:], vowel))
     return syllables
 
 
