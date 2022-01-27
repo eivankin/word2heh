@@ -19,7 +19,7 @@ class Settings:
 
     """
     :param rate: probability of 'hehefication'
-    :param level: percentage of 'hehefized' syllables,
+    :param level: percentage (from 0 to 1) of 'hehefized' syllables,
         at least one syllable will be replaced anyway
     :param seed: seed for random for reproducible results
     """
