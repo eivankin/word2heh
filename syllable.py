@@ -31,12 +31,12 @@ class Syllable:
 
     def agree_closeness_with_heh(self, other: 'Syllable') -> 'Syllable':
         value = self.value
-        if other.is_close() != self.is_close():
-            value = value[:-1] if self.is_close() else value + 'х'
+        if self in HEH_SYLLABLES and self.is_close() and other.value[0].lower() in CONSONANTS:
+            value = value[:-1]
         return Syllable(value, self.vowel)
 
     def is_close(self) -> bool:
-        return self.value[-1] in CONSONANTS
+        return self.value[-1].lower() in CONSONANTS
 
     def __hash__(self) -> int:
         return hash((self.value.lower(), self.vowel))

@@ -63,7 +63,7 @@ def word_to_heh(word_match: re.Match) -> str:
             level -= 1
             syllables[i] = best_match.agree_case_with(syl)
 
-    return ''.join(map(str, generalize_syllables(syllables))).replace('хх', 'х')
+    return ''.join(map(str, generalize_syllables(syllables)))
 
 
 def generalize_syllables(syllables: list[Syllable],
@@ -86,7 +86,7 @@ def generalize_syllables(syllables: list[Syllable],
             is_surrounded = next_syl is not None and prev == next_syl
             if filter_func(prev) and (reps > level or is_surrounded or not level
                                       and len(prev.value) > len(curr.value)):
-                generalized[idx] = prev.agree_case_with(curr).agree_closeness_with_heh(curr)
+                generalized[idx] = prev.agree_case_with(curr)
                 reps += 1
             else:
                 reps = 0
@@ -104,6 +104,9 @@ def generalize_syllables(syllables: list[Syllable],
     for i in range(len(syllables) - 1, 0, -1):
         prev, curr = generalized[i - 1:i + 1][::-1]
         repeats = gen_step(None if i <= 0 else syllables[i - 1], repeats, i - 1)
+
+    for i in range(len(generalized) - 1):
+        generalized[i] = generalized[i].agree_closeness_with_heh(generalized[i + 1])
     return generalized
 
 
