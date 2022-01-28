@@ -149,7 +149,7 @@ def text_to_heh(text: str, **parameters: dict) -> str:
     global settings
     if parameters:
         settings = Settings(**parameters)
-    return re.sub('[А-Яа-я]+', word_to_heh, text)
+    return re.sub('[А-Яа-яё]+', word_to_heh, text)
 
 
 if __name__ == '__main__':
