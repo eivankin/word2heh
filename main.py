@@ -63,7 +63,7 @@ def word_to_heh(word_match: re.Match) -> str:
             level -= 1
             syllables[i] = best_match.agree_case_with(syl)
 
-    return ''.join(map(str, generalize_syllables(syllables)))
+    return ''.join(map(str, syllables)).replace('хх', 'х') 
 
 
 def generalize_syllables(syllables: list[Syllable],
